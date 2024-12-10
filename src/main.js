@@ -12,6 +12,7 @@ import 'izitoast/dist/css/iziToast.min.css';
 const form = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
 const loader = document.querySelector('.loader');
+const loadMoreBtn = document.querySelector('#load-more');
 let lightbox = new SimpleLightbox('.gallery a');
 let currentPage = 1;
 let currentQuery = '';
@@ -29,6 +30,7 @@ form.addEventListener('submit', async event => {
   currentPage = 1;
   clearGallery(gallery);
   toggleLoader(loader, true);
+  loadMoreBtn.style.display = 'none'; // Hide Load more button initially
 
   try {
     const data = await fetchImages(currentQuery, currentPage);
@@ -43,6 +45,7 @@ form.addEventListener('submit', async event => {
     const markup = renderImages(data.hits);
     gallery.insertAdjacentHTML('beforeend', markup);
     lightbox.refresh();
+    loadMoreBtn.style.display = 'block'; // Show Load more button
   } catch (error) {
     iziToast.error({
       title: 'Error',
@@ -52,24 +55,26 @@ form.addEventListener('submit', async event => {
     toggleLoader(loader, false);
   }
 });
-gallery.addEventListener('click', event => {
-  if (event.target.tagName === 'IMG') {
-    const img = event.target;
-    const titleElement = img
-      .closest('.gallery-item')
-      .querySelector('.image-title');
-    titleElement.style.display = 'block'; // Показуємо назву
+
+loadMoreBtn.addEventListener('click', async () => {
+  currentPage += 1;
+  toggleLoader(loader, true);
+
+  try {
+    const data = await fetchImages(currentQuery, currentPage);
+    const markup = renderImages(data.hits);
+    gallery.insertAdjacentHTML('beforeend', markup);
+    lightbox.refresh();
+  } catch (error) {
+    iziToast.error({
+      title: 'Error',
+      message: 'Failed to load more images!',
+    });
+  } finally {
+    toggleLoader(loader, false);
   }
 });
 
-// Функція для оновлення галереї
-export function updateGalleryMarkup(images) {
-  const markup = renderImages(images);
-  gallery.insertAdjacentHTML('beforeend', markup);
-
-  // Оновлюємо SimpleLightbox після додавання нових елементів
-  lightbox.refresh();
-}
 window.addEventListener('scroll', async () => {
   if (
     window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
@@ -93,11 +98,3 @@ window.addEventListener('scroll', async () => {
     }
   }
 });
-
-
-
-
-
-
-
-

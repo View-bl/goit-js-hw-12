@@ -1,5 +1,6 @@
 body {
   font-family: Arial, sans-serif;
+  margin: 25px;
 }
 
 #search-form {
@@ -22,16 +23,37 @@ input[type="text"]:focus {
   outline: none;
 }
 
-button {
+.Search {
   padding: 10px;
-  background-color: #0d00ff;
+  background-color: #4e75ff;
   border: none;
   color: white;
   cursor: pointer;
+  border-radius: 8px;
+    padding: 8px 16px;
+    width: 91px;
+    height: 40px;
 }
 
 button:hover {
   background-color: #555;
+}
+
+.Load-more {
+  border-radius: 8px;
+  padding: 8px 16px;
+  width: 125px;
+  height: 40px;
+  background-color: #4e75ff;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin:  auto;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .gallery {
