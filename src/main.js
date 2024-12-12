@@ -49,7 +49,11 @@ form.addEventListener('submit', async event => {
     const markup = renderImages(data.hits);
     gallery.insertAdjacentHTML('beforeend', markup);
     lightbox.refresh();
-    loadMoreBtn.style.display = 'block'; // Show Load more button
+
+    // Show Load more button only if exactly 15 images are returned
+    if (data.hits.length === 15) {
+      loadMoreBtn.style.display = 'block';
+    }
   } catch (error) {
     iziToast.error({
       title: 'Error',
@@ -60,15 +64,6 @@ form.addEventListener('submit', async event => {
   }
 });
 
-// Smooth scrolling after loading images
-const scrollAfterLoad = () => {
-  const galleryItem = document.querySelector('.gallery-item');
-  if (galleryItem) {
-    const itemHeight = galleryItem.getBoundingClientRect().height;
-    window.scrollBy({ top: itemHeight * 2, behavior: 'smooth' });
-  }
-};
-
 loadMoreBtn.addEventListener('click', async () => {
   currentPage += 1;
   toggleLoader(loader, true);
@@ -78,11 +73,13 @@ loadMoreBtn.addEventListener('click', async () => {
     const markup = renderImages(data.hits);
     gallery.insertAdjacentHTML('beforeend', markup);
     lightbox.refresh();
-    scrollAfterLoad(); // Scroll after loading more images
 
-    // Check if we've reached the end of the search results
-    if (data.hits.length + (currentPage - 1) * 15 >= totalHits) {
-      loadMoreBtn.style.display = 'none'; // Hide Load more button
+    // Hide Load more button if fewer than 15 images are returned
+    if (
+      data.hits.length < 15 ||
+      data.hits.length + (currentPage - 1) * 15 >= totalHits
+    ) {
+      loadMoreBtn.style.display = 'none';
       iziToast.info({
         title: 'End of Results',
         message: "We're sorry, but you've reached the end of search results.",
@@ -95,39 +92,5 @@ loadMoreBtn.addEventListener('click', async () => {
     });
   } finally {
     toggleLoader(loader, false);
-  }
-});
-
-window.addEventListener('scroll', async () => {
-  if (
-    window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 &&
-    !loader.style.display
-  ) {
-    currentPage += 1;
-    toggleLoader(loader, true);
-
-    try {
-      const data = await fetchImages(currentQuery, currentPage);
-      const markup = renderImages(data.hits);
-      gallery.insertAdjacentHTML('beforeend', markup);
-      lightbox.refresh();
-      scrollAfterLoad(); // Scroll after loading more images
-
-      // Check if we've reached the end of the search results
-      if (data.hits.length + (currentPage - 1) * 15 >= totalHits) {
-        loadMoreBtn.style.display = 'none'; // Hide Load more button
-        iziToast.info({
-          title: 'End of Results',
-          message: "We're sorry, but you've reached the end of search results.",
-        });
-      }
-    } catch (error) {
-      iziToast.error({
-        title: 'Error',
-        message: 'Failed to load more images!',
-      });
-    } finally {
-      toggleLoader(loader, false);
-    }
   }
 });
